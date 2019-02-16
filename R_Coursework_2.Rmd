@@ -1,0 +1,59 @@
+---
+title: "R_Coursework2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r }  
+#1.a
+
+library(ISLR)
+set.seed(1)
+train <- sample(nrow(OJ), 800)
+OJ.train <- OJ[train, ]
+OJ.test <- OJ[-train, ]
+
+#1.b
+
+library(e1071)
+svm.linear <- svm(Purchase ~ ., data = OJ.train, kernel = "linear", cost = 0.01)
+summary(svm.linear)
+#Support vector classifier creates 432 support vectors out of 800 training points. Out of these, 217 belong to level MM and remaining 215 belong to level CH.
+
+#1.c
+train.pred <- predict(svm.linear, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(78 + 55) / (439 + 228 + 78 + 55)
+## 0.16625
+test.pred <- predict(svm.linear, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(31 + 18) / (141 + 80 + 31 + 18)
+## 0.1814815
+###The training error rate is 16.6% and test error rate is about 18.1%.
+
+#1.d
+set.seed(2)
+tune.out <- tune(svm, Purchase ~ ., data = OJ.train, kernel = "linear", ranges = list(cost = 10^seq(-2, 1, by = 0.25)))
+summary(tune.out)
+#the optimal cost is 0.1
+
+#1.e
+svm.linear <- svm(Purchase ~ ., kernel = "linear", data = OJ.train, cost = tune.out$best.parameter$cost)
+train.pred <- predict(svm.linear, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(71 + 56) / (438 + 235 + 71 + 56)
+## [1] 0.15875
+test.pred <- predict(svm.linear, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(32 + 19) / (140 + 79 + 32 + 19)
+## [1] 0.1888889
+###the training error rate is now 15.8% and the test error rate is 18.8%.
+
+#1.f
+svm.radial <- svm(Purchase ~ ., kernel = "radial", data = OJ.train)
+summary(svm.radial)
