@@ -1,0 +1,324 @@
+---
+title: "Coursework1 - R Boston Data"
+output: html_notebook
+---
+
+
+```{r}
+siblings <- c(2,3,0,5,2,1,1,0,3,3)
+
+#mean number of siblings (1.a.i)
+
+mean(siblings)
+```
+```{r}
+#median number of siblings (1.a.ii)
+
+median(siblings)
+```
+
+```{r}
+#mode number of siblings (1.a.iii)
+
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+x<- siblings
+result<- Mode(x)
+print(result)
+```
+
+```{r}
+#Variance of siblings (1.a.iv)
+var(siblings)
+```
+
+```{r}
+#Standard deviation of siblings (1.a.v)
+sd(siblings)
+```
+
+```{r}
+#1.b
+ages<- c(23, 25, 18, 45, 30, 21, 22, 19, 29, 35)
+
+#Covariance between siblings and ages (1.b.i)
+cov(siblings, ages)
+```
+
+```{r}
+#Correlation between siblings and ages 
+cor(siblings,ages)
+```
+
+```{r}
+# The results of the correlation between the ages of students and their number of siblings exhibits strong positive linear correlation. (1.b.ii)
+
+
+#Causation
+# Althought the correlation between the two sets of data (siblings and ages) show strong positive linear correlation, this is a measure of linear association and cannot be used to argue that the two variable have a causal link, therefore it cannot be said that the number of siblings of a person has an affect on their age, or vice versa.
+
+#Question 2.a
+
+library(MASS)
+Boston
+```
+
+```{r}
+dim(Boston)
+```
+
+```{r}
+#506 rows and 14 columns
+#506 housing values in Boston suburbs and 14 feature
+
+
+#2.b.
+
+pairs(Boston)
+```
+
+```{r}
+#Description of graph:
+#The graph shows association between two variables
+#The variable names (diagonally) represent the x-axis of the column and the y-axis of the row
+#By observing the graphs produced my observations based on linear association of the scatter plots are the following:
+#crime shows some correlation with age,dis,rad,tax,ptraatio
+#indus shows some correlation with age and dis
+#nox shows some correlation with age and dis
+#lstat shows some correlation with medv
+
+#2.c
+
+plot(Boston$age,Boston$crim)
+```
+```{r}
+cor(Boston$age,Boston$crim)
+```
+
+```{r}
+# there is a weak positive linear correlation (0.35) which suggests that older homes are more likely to suffer from an increased rate of crime per capita.
+
+plot(Boston$dis, Boston$crim)
+```
+
+```{r}
+cor(Boston$dis, Boston$crim)
+```
+
+```{r}
+# there is a weak negative linear correlation (-0.38) which suggests that the increased distance to Employment centres results in decrease of crime per rate capita
+
+plot(Boston$rad, Boston$crim)
+```
+
+```{r}
+cor(Boston$rad,Boston$crim)
+```
+
+```{r}
+# there is a strong positive linear correlation (0.63) which suggests that the higher the index of accessibility to highway the higher the crime per capita
+
+plot(Boston$tax, Boston$crim)
+```
+
+```{r}
+cor(Boston$tax, Boston$crim)
+```
+
+```{r}
+# there is a strong positive linear correlation (0.58) which suggests that the higher the tax rate the higher the crime per capita
+
+plot(Boston$ptratio, Boston$crim)
+```
+
+```{r}
+cor(Boston$ptratio, Boston$crim)
+```
+
+```{r}
+#there is a weak positive linear correlation (0.29) which suggests that the higher the pupil-teacher ration corresponds to slight increase in crime per capita
+
+plot(Boston$indus, Boston$crim)
+```
+
+```{r}
+cor(Boston$indus, Boston$crim)
+```
+
+```{r}
+# there is a weak positive linear correlation (0.41) which suggests that the increased proportion of non-retail business acres per town results in increase in crime per capita
+
+plot(Boston$nox, Boston$crim)
+```
+
+```{r}
+cor(Boston$nox, Boston$crim)
+```
+
+```{r}
+#there is a weak positive correlation (0.42) which suggests the increase in pollution results in slightly higher rate of crime per capita (altought the causation of these two may be unlikely)
+
+plot(Boston$black, Boston$crim)
+```
+
+```{r}
+cor(Boston$black, Boston$crim)
+```
+
+```{r}
+# there is a weak negative linear correlation (-0.38) which suggests that the increase in proportion of blacks by town results slight decrease of crime per capita
+
+plot(Boston$lstat, Boston$crim)
+```
+
+```{r}
+cor(Boston$lstat, Boston$crim)
+```
+
+```{r}
+# there is a weak positive linear correlation (0.45) which suggests that the higher the percent of lower status of the population results in increase of the rate of crime per capita
+
+plot(Boston$medv, Boston$crim)
+```
+
+```{r}
+cor(Boston$medv, Boston$crim)
+```
+
+```{r}
+# there is a weak negative linear correlation (-0.39) which suggests that the increased median value of owner occupied homes results in slight decrease of the rate of crime per capita
+
+#2.d 
+# histogram of crime rates per capita in Boston suburbs
+par(mfrow=c(1,3))
+hist(Boston$crim[Boston$crim>1], breaks=25)
+range(Boston$crim)
+```
+
+```{r}
+#Majority of the suburbds of Boston appear to have relatively low crime rate per capita, however about 20 suburbs have crime rate frequency of over 20. The histogram is very skewed, which suggests that a small number of suburbs (10 suburbs on an enlarged histogram), appear to have crime frequency of over 80 frequency. The range seems to be very large from 0.00632 to 88.97620
+
+
+#histogram of tax rates
+hist(Boston$tax,breaks=25)
+range(Boston$tax)
+```
+
+```{r}
+# there seems to be a large divide in tax rates, demonstrating that suburbs either pay under 500 or a higher rate of over 650. The range of the values seems to be very large from 187 to 711
+
+#histogram of pupil-teacher ratio
+hist(Boston$ptratio, breaks=25)
+```
+
+```{r}
+range(Boston$ptratio)
+```
+
+```{r}
+#there seems to be a skew towards higher ratios of the pupil-teacher ratio, however the range is relatively low so the difference is less dramatic, as the range of values is from 12.6 to 22
+
+
+
+
+#2.e
+#suburbs bound by the river
+ dim(subset(Boston, chas == 1))
+```
+
+```{r}
+#35 suburbs are bound by the river.
+ 
+#2.f median ptratio
+median(Boston$ptratio)
+```
+
+```{r}
+#2.g suburb with lowest median value
+min(Boston$medv)
+```
+
+```{r}
+#other features of this suburb
+t(subset(Boston, medv == min(Boston$medv)))
+```
+
+```{r}
+#comparison between suburb 5 and other suburbs
+summary(Boston)
+```
+
+```{r}
+#Observations: crime is abobe third quartile, zn is at minimum, indus is at third quartile, chas is 0 (suburb is not bound by river), nox is above third quartile, rm is below first quartile, age is at max, dis is below first quartile, rad is at max, tax is at third quartile,ptratio is at third quartile, black is above median value, lstat is above third quartile, medv is at minimum. Overall the suburb does not seem like the best place to live at it has comparatively higher rate of crime, proportion of non-retail business acres per town, pollution, tax, pupil-teacher ratio and lower status of the population. It has comparatively older houses and is higher index of accessibility to radial highways. These factors suggest it is not a desirable place to live compared to other suburbs of Boston.
+
+#2.h
+dim(subset(Boston, rm > 7))
+```
+
+```{r}
+#64 suburbs average more than 7 rooms per dwelling.
+
+dim(subset(Boston, rm > 8))
+```
+
+```{r}
+#13 suburbs average more than 8 rooms per dwelling
+
+summary(subset(Boston, rm > 8 ))
+```
+
+```{r}
+summary(Boston)
+```
+
+```{r}
+#Observations:By comparing the range values by the two summary tables, it seems that dwellings of over 8 rooms have comparatively lower crime rates per capita, slightly lower pupil-teacher ratio and and lower percentage of lower status population. This indicates higher standard of living in dwelling of over 8 rm.
+
+
+#Question 3
+
+set.seed(1)
+
+#Q.3.a.
+x = rnorm(100, mean=0, sd=sqrt(1))
+
+#Q.3.b
+esp = rnorm(100, mean=0, sd=sqrt(0.25))
+
+#Q.3.c
+y = -1 + (0.5*x)+esp
+length(y)
+```
+
+```{r}
+#In this model the value for Beta-0 is -1 and the value for Beta-1 is 0.5
+
+#Q.3.d
+plot(x,y)
+cor(x,y)
+```
+
+```{r}
+#There is a strong positive linear correlation between x and y, observed by the distribution of points on the graph and the correlation coefficient (0.66)
+
+#Q.3.e
+lm.fit = lm(y ~ x)
+print(lm.fit)
+```
+
+```{r}
+#based on this approximation, Beta-0-hat, or estimated value of the y-intercept is -1.10188, and the approximation of Beta-1-hat, or the estimated value of the slope is 0.4995. Both estimates are very close to the true values; -1 and 0.5 respectively, therefore this seemes to be a good model.
+summary(lm.fit)
+```
+
+```{r}
+#Q.3.f
+plot(x,y)
+abline(lm.fit)
+abline( a=-1, b=1/2, col='red')
+legend("bottomright",pch=c("+","*"),col=c("black","red"),legend = c("estimated","true"))
+```
+
