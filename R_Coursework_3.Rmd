@@ -1,0 +1,147 @@
+---
+title: "Coursework_2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+
+
+```{r }  
+#1.a
+library(MASS)
+library(randomForest)
+ 
+set.seed(1)
+train <- sample(1:nrow(Boston), nrow(Boston) / 2)
+Boston.train <- Boston[train, -14]
+Boston.test <- Boston[-train, -14]
+Y.train <- Boston[train, 14]
+Y.test <- Boston[-train, 14]
+rf.boston1 <- randomForest(Boston.train, y = Y.train, xtest = Boston.test, ytest = Y.test, mtry = ncol(Boston) - 1, ntree = 500)
+rf.boston2 <- randomForest(Boston.train, y = Y.train, xtest = Boston.test, ytest = Y.test, mtry = (ncol(Boston) - 1) / 2, ntree = 500)
+rf.boston3 <- randomForest(Boston.train, y = Y.train, xtest = Boston.test, ytest = Y.test, mtry = sqrt(ncol(Boston) - 1), ntree = 500)
+
+plot(1:500, rf.boston1$test$mse, col = "green", type = "l", xlab = "Number of Trees", ylab = "Test MSE", ylim = c(10, 19))
+lines(1:500, rf.boston2$test$mse, col = "red", type = "l")
+lines(1:500, rf.boston3$test$mse, col = "blue", type = "l")
+legend("topright", c("m = p", "m = p/2", "m = sqrt(p)"), col = c("green", "red", "blue"), cex = 1, lty = 1)
+
+# The plot shows that the test MSE for single tree (p) is quite high, around 18. It is reduced by adding more trees and levels off over 100 trees.Additionally, the Test MSE for all predictors is higher than for half the predictors or the square root of the number of predictors.
+
+#Question 2a
+
+library(ISLR)
+set.seed(1)
+train <- sample(1:nrow(Carseats), nrow(Carseats) / 2)
+Carseats.train <- Carseats[train, ]
+Carseats.test <- Carseats[-train, ]
+
+#Question 2b
+library(tree)
+tree.carseats <- tree(Sales ~ ., data = Carseats.train)
+summary(tree.carseats)
+
+plot(tree.carseats)
+text(tree.carseats, pretty = 0)
+yhat <- predict(tree.carseats, newdata = Carseats.test)
+mean((yhat - Carseats.test$Sales)^2)
+
+#Test MSE is about 4.15
+
+#Question 2c
+
+cv.carseats <- cv.tree(tree.carseats)
+plot(cv.carseats$size, cv.carseats$dev, type = "b")
+tree.min <- which.min(cv.carseats$dev)
+points(tree.min, cv.carseats$dev[tree.min], col = "red", cex = 2, pch = 20)
+
+prune.carseats <- prune.tree(tree.carseats, best = 8)
+plot(prune.carseats)
+text(prune.carseats, pretty = 0)
+yhat <- predict(prune.carseats, newdata = Carseats.test)
+mean((yhat - Carseats.test$Sales)^2)
+
+#Pruning the tree increases the Test MSE to 5.1 from 8.
+
+# Question 2d
+bag.carseats <- randomForest(Sales ~ ., data = Carseats.train, mtry = 10, ntree = 500, importance = TRUE)
+yhat.bag <- predict(bag.carseats, newdata = Carseats.test)
+mean((yhat.bag - Carseats.test$Sales)^2)
+
+#Bagging approach reduces the test MSE to 2.6
+
+importance(bag.carseats)
+
+# It is shown that "Price" and "ShelveLoc" are the two most important variables.
+
+#Question 2.e
+rf.carseats <- randomForest(Sales ~ ., data = Carseats.train, mtry = 3, ntree = 500, importance = TRUE)
+yhat.rf <- predict(rf.carseats, newdata = Carseats.test)
+mean((yhat.rf - Carseats.test$Sales)^2)
+
+importance(rf.carseats)
+
+#In this case, with m=p-???m=p, we have a Test MSE of 3.3. The most important factors are again "Price" and "ShelveLoc".
+
+#Question 3a
+library(ISLR)
+attach(OJ)
+set.seed(1)
+train <- sample(1:nrow(OJ), 800)
+OJ.train <- OJ[train, ]
+OJ.test <- OJ[-train, ]
+
+#Question 3b
+library(tree)
+oj.tree = tree(Purchase ~ ., data = OJ.train)
+summary(oj.tree)
+
+# Results show 8 terminal nodes and a training error rate of 0.165.
+
+#Question 3c
+oj.tree
+
+# The node labelled 8 was chosen, which is a terminal node because of the asterisk. The split criterion is LoyalCH < 0.035, the number of observations in that branch is 57 with a deviance of 10.07 and an overall prediction for the branch of MM. Less than 2% of the observations in that branch take the value of CH, and the remaining 98% take the value of MM.
+
+#Question 3d
+plot(oj.tree)
+text(oj.tree, pretty = 0)
+
+#We may see that the most important indicator of "Purchase" appears to be "LoyalCH", since the first branch differentiates the intensity of customer brand loyalty to CH. In fact, the top three nodes contain "LoyalCH".
+
+#Question 3e
+oj.pred = predict(oj.tree, OJ.test, type = "class")
+table(OJ.test$Purchase, oj.pred)
+
+#Question 3f
+cv.oj = cv.tree(oj.tree, FUN = prune.tree)
+
+#Question 3g
+plot(cv.oj$size, cv.oj$dev, type = "b", xlab = "Tree Size", ylab = "Deviance")
+
+#Question 3h
+#Tree size 5 gives lowest cross-validation error.
+
+#Question 3i
+oj.pruned = prune.tree(oj.tree, best = 5)
+
+#Question 3j
+summary(oj.pruned)
+summary(oj.tree)
+#The misclassification error rate is slightly higher for the pruned tree (0.1825 vs 0.165).
+
+#Question 3k
+pred.unpruned = predict(oj.tree, OJ.test, type = "class")
+misclass.unpruned = sum(OJ.test$Purchase != pred.unpruned)
+misclass.unpruned/length(pred.unpruned)
+
+pred.pruned = predict(oj.pruned, OJ.test, type = "class")
+misclass.pruned = sum(OJ.test$Purchase != pred.pruned)
+misclass.pruned/length(pred.pruned)
+
+# In this case prunning produces slightly higher test error rate 0.259 from the unpruned value 0.225.
