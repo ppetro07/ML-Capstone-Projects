@@ -1,0 +1,177 @@
+---
+title: "Coursework_2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r }  
+
+#Pavlina Petrova
+#1.a
+
+library(ISLR)
+set.seed(1)
+train <- sample(nrow(OJ), 800)
+OJ.train <- OJ[train, ]
+OJ.test <- OJ[-train, ]
+
+#1.b
+
+library(e1071)
+svm.linear <- svm(Purchase ~ ., data = OJ.train, kernel = "linear", cost = 0.01)
+summary(svm.linear)
+#Support vector classifier creates 432 support vectors out of 800 training points. Out of these, 217 belong to level MM and remaining 215 belong to level CH.
+
+#1.c
+train.pred <- predict(svm.linear, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(78 + 55) / (439 + 228 + 78 + 55)
+## 0.16625
+test.pred <- predict(svm.linear, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(31 + 18) / (141 + 80 + 31 + 18)
+## 0.1814815
+###The training error rate is 16.6% and test error rate is about 18.1%.
+
+#1.d
+set.seed(2)
+tune.out <- tune(svm, Purchase ~ ., data = OJ.train, kernel = "linear", ranges = list(cost = 10^seq(-2, 1, by = 0.25)))
+summary(tune.out)
+#the optimal cost is 0.1
+
+#1.e
+svm.linear <- svm(Purchase ~ ., kernel = "linear", data = OJ.train, cost = tune.out$best.parameter$cost)
+train.pred <- predict(svm.linear, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(71 + 56) / (438 + 235 + 71 + 56)
+## [1] 0.15875
+test.pred <- predict(svm.linear, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(32 + 19) / (140 + 79 + 32 + 19)
+## [1] 0.1888889
+###the training error rate is now 15.8% and the test error rate is 18.8%.
+
+#1.f
+svm.radial <- svm(Purchase ~ ., kernel = "radial", data = OJ.train)
+summary(svm.radial)
+train.pred <- predict(svm.radial, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(77 + 39) / (455 + 229 + 77 + 39)
+##0.145
+test.pred <- predict(svm.radial, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(28 + 18) / (141 + 83 + 28 + 18)
+##0.1703704
+###Radial kernel with default gamma creates 379 support vectors, out of which, 188 belong to level CH and remaining 191 belong to level MM. The classifier has a training error of 14.5% and a test error of 17% which is a slight improvement over linear kernel. 
+set.seed(2)
+tune.out <- tune(svm, Purchase ~ ., data = OJ.train, kernel = "radial", ranges = list(cost = 10^seq(-2, 
+    1, by = 0.25)))
+summary(tune.out)
+
+svm.radial <- svm(Purchase ~ ., kernel = "radial", data = OJ.train, cost = tune.out$best.parameter$cost)
+summary(svm.radial)
+
+train.pred <- predict(svm.radial, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(77 + 39) / (455 + 229 + 77 + 39)
+##0.145
+test.pred <- predict(svm.radial, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(28 + 18) / (141 + 83 + 28 + 18)
+##0.1703704
+###Tuning does not reduce train and test error rates as we already used the optimal cost of 1
+
+#1.g
+svm.poly <- svm(Purchase ~ ., kernel = "polynomial", data = OJ.train, degree = 2)
+summary(svm.poly)
+train.pred <- predict(svm.poly, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(105 + 33) / (461 + 201 + 105 + 33)
+## 0.1725
+test.pred <- predict(svm.poly, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(41 + 10) / (149 + 70 + 41 + 10)
+## 0.1888889
+###Polynomial kernel with default gamma creates 454 support vectors, out of which, 224 belong to level CH and remaining 230 belong to level MM. The classifier has a training error of 17.2% and a test error of 18.8% which is no improvement over linear kernel
+set.seed(2)
+tune.out <- tune(svm, Purchase ~ ., data = OJ.train, kernel = "polynomial", degree = 2, ranges = list(cost = 10^seq(-2, 
+    1, by = 0.25)))
+summary(tune.out)
+
+svm.poly <- svm(Purchase ~ ., kernel = "polynomial", degree = 2, data = OJ.train, cost = tune.out$best.parameter$cost)
+summary(svm.poly)
+
+train.pred <- predict(svm.poly, OJ.train)
+table(OJ.train$Purchase, train.pred)
+#(72 + 44) / (450 + 234 + 72 + 44)
+## [1] 0.145
+
+test.pred <- predict(svm.poly, OJ.test)
+table(OJ.test$Purchase, test.pred)
+#(31 + 19) / (140 + 80 + 31 + 19)
+## [1] 0.1851852
+###Tuning reduce train and test error rates
+
+#1.h
+#Overall, radial basis kernel seems to be producing minimum misclassification error on both train and test data.
+
+#3.a
+set.seed(2)
+hc.complete <- hclust(dist(USArrests), method = "complete")
+plot(hc.complete)
+
+#3.b
+cutree(hc.complete, 3)
+
+#3.c
+sd.data <- scale(USArrests)
+hc.complete.sd <- hclust(dist(sd.data), method = "complete")
+plot(hc.complete.sd)
+
+#3.d
+cutree(hc.complete.sd, 3)
+table(cutree(hc.complete, 3), cutree(hc.complete.sd, 3))
+#Scaling the variables affects the clusters obtained although the trees are somewhat similar. The variables should be scaled beforehand because the data measures have different units.
+
+#4.a
+set.seed(2)
+x <- matrix(rnorm(20 * 3 * 50, mean = 0, sd = 0.001), ncol = 50)
+x[1:20, 2] <- 1
+x[21:40, 1] <- 2
+x[21:40, 2] <- 2
+x[41:60, 1] <- 1
+true.labels <- c(rep(1, 20), rep(2, 20), rep(3, 20))
+
+#4.b
+pr.out <- prcomp(x)
+plot(pr.out$x[, 1:2], col = 1:3, xlab = "Z1", ylab = "Z2", pch = 19)
+
+#4c
+km.out <- kmeans(x, 3, nstart = 20)
+table(true.labels, km.out$cluster)
+#the observations are perfectly clustured
+
+#4.d
+km.out <- kmeans(x, 2, nstart = 20)
+table(true.labels, km.out$cluster)
+#All observations of one of the three clusters is now absorbed in one of the two clusters.
+
+#4.e
+km.out <- kmeans(x, 4, nstart = 20)
+table(true.labels, km.out$cluster)
+#The first cluster is splitted into two clusters.
+
+#4.f
+km.out <- kmeans(pr.out$x[, 1:2], 3, nstart = 20)
+table(true.labels, km.out$cluster)
+#Perfect clusturing
+
+#4.g
+km.out <- kmeans(scale(x), 3, nstart = 20)
+table(true.labels, km.out$cluster)
+#The resutls are worse than with unscaled data, as scaling affects the distance between the observations.
